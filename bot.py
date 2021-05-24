@@ -47,14 +47,20 @@ def get_data(selected_district=None, date=None, pin=None):
         results = data.json()['sessions']
         message = ''
         if len(results):
+            number = 1
             for result in results:
+
                 if result['available_capacity'] > 0:
-                    message += f"<strong>{result['name']} - {result['address']}</strong>\n" \
+                    message += f"{number}) <strong>{result['name']}</strong> \nAddress: <strong>{result['address']}</strong>\n" \
+                               f"Block: <strong>{result['block_name']}</strong> | Pin: {result['pincode']}\n" \
+                               f"Open from <strong>{result['from']} to {result['to']}</strong>\n" \
                                f"Vaccine: <strong>{result['vaccine']}</strong>\n" \
-                               f"Availability\n" \
+                               f"\n<strong>Availability</strong>\n" \
                                f"First Dose: {result['available_capacity_dose1']}\n" \
                                f"Second Dose: {result['available_capacity_dose2']}\n" \
-                               f"------------\n"
+                               f"<a href='https://www.google.com/maps/search/?api=1&query={result['lat']},{result['long']}'>Click to get directions</a> \n" \
+                               f"------------------------\n"
+                    number+=1
         if message == '':
             message = None
         else:
@@ -66,11 +72,12 @@ def get_data(selected_district=None, date=None, pin=None):
 
 def start(update: Update, _: CallbackContext) -> int:
     reply_keyboard = [['District', 'Pin']]
+    requests.get('https://api.countapi.xyz/hit/namespace/rahulreghunathmannady')
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
-        'Hi! My name is CowinSlot Bot. Lets find a slot. '
-        'Select an option',
+        'Hi! My name is CowinSlot Bot. Lets find a slot.\n '
+        'type /stop anytime to end conversation',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
 
