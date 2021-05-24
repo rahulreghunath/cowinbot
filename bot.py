@@ -60,13 +60,13 @@ def get_data(selected_district=None, date=None, pin=None):
                                f"Second Dose: {result['available_capacity_dose2']}\n" \
                                f"<a href='https://www.google.com/maps/search/?api=1&query={result['lat']},{result['long']}'>Click to get directions</a> \n" \
                                f"------------------------\n"
-                    number+=1
+                    number += 1
         if message == '':
             message = None
         else:
             message = f'<b>{date}</b>\n \n' + message
     else:
-        message = 'All servers are busy, please try after some time'
+        message = 'All servers are busy, please try after some time 🤕'
     return message
 
 
@@ -76,8 +76,8 @@ def start(update: Update, _: CallbackContext) -> int:
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
-        'Hi! My name is CowinSlot Bot. Lets find a slot.\n '
-        'type /stop anytime to end conversation',
+        'Hi☺️ \nMy name is CowinSlot Bot. Lets find a slot for vaccination.\n'
+        'Type /stop anytime to end conversation',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
 
@@ -149,7 +149,7 @@ def district_result(update: Update, _: CallbackContext) -> int:
     message = get_data(selected_district=user_district[0], date=update.message.text)
     update.message.reply_text(
         message if message is not None else 'No slot available in ' + user_district[0][
-            'district_name'] + ' on ' + user_date,
+            'district_name'] + ' on ' + user_date + '😢',
         parse_mode=ParseMode.HTML,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
@@ -162,7 +162,7 @@ def pin_result(update: Update, _: CallbackContext) -> int:
     user_date = update.message.text
     message = get_data(date=update.message.text, pin=user_pin)
     update.message.reply_text(
-        message if message is not None else 'No slot available in ' + user_pin + ' on ' + user_date,
+        message if message is not None else 'No slot available in ' + user_pin + ' on ' + user_date + '😢',
         parse_mode=ParseMode.HTML,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
@@ -173,7 +173,7 @@ def cancel(update: Update, _: CallbackContext) -> int:
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
-        'Bye! I hope we can talk again some day.', reply_markup=ReplyKeyboardRemove()
+        'Bye! I hope we can talk again some day. Stay safe 😁', reply_markup=ReplyKeyboardRemove()
     )
 
     return ConversationHandler.END
