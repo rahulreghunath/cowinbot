@@ -72,7 +72,8 @@ def get_data(selected_district=None, date=None, pin=None):
 
 def start(update: Update, _: CallbackContext) -> int:
     reply_keyboard = [['District', 'Pin']]
-    requests.get('https://api.countapi.xyz/hit/namespace/rahulreghunathmannady')
+    if os.getenv('API_KEY') == 'production':
+        requests.get('https://api.countapi.xyz/hit/namespace/rahulreghunathmannady')
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
@@ -200,6 +201,7 @@ def main() -> None:
                 '^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.]((19|20)\\d\\d)$'),
                 pin_result)],
         },
+        allow_reentry=True,
         fallbacks=[CommandHandler('stop', cancel)],
     )
 
