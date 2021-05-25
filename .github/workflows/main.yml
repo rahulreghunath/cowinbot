@@ -34,4 +34,5 @@ jobs:
           script: |
             cd cowinbot
             git pull origin master
-            git status
+            supervisorctl restart all
+            supervisorctl status
