@@ -33,5 +33,5 @@ jobs:
           port: 22
           script: |
             cd cowinbot
-            git pull orign master
+            git pull origin master
             git status
