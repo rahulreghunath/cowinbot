@@ -12,7 +12,7 @@ from telegram.ext import (
     CallbackContext, CallbackQueryHandler,
 )
 from districts import districts
-import urls
+import constants
 
 # Enable logging
 logging.basicConfig(
@@ -32,10 +32,12 @@ user_date = ''
 
 
 def get_data(selected_district=None, date=None, pin=None):
+    messages = []
+
     if selected_district:
-        url = urls.FIND_BY_DIST.format(selected_district["district_id"], date)
+        url = constants.FIND_BY_DIST.format(selected_district["district_id"], date)
     else:
-        url = urls.FIND_BY_PIN.format(pin, date)
+        url = constants.FIND_BY_PIN.format(pin, date)
 
     headers = {
         'Accept-Language': 'IN',
@@ -47,32 +49,33 @@ def get_data(selected_district=None, date=None, pin=None):
         url,
         headers=headers
     )
-
     if data.status_code == 200:
         results = data.json()['sessions']
         message = ''
         if len(results):
             number = 1
             for result in results:
-
                 if result['available_capacity'] > 0:
-                    message += f"{number}) <strong>{result['name']}</strong> \nAddress: <strong>{result['address']}</strong>\n" \
-                               f"Block: <strong>{result['block_name']}</strong> | Pin: {result['pincode']}\n" \
-                               f"Open from <strong>{result['from']} to {result['to']}</strong>\n" \
-                               f"Vaccine: <strong>{result['vaccine']}</strong>\n" \
-                               f"\n<strong>Availability</strong>\n" \
-                               f"First Dose: {result['available_capacity_dose1']}\n" \
-                               f"Second Dose: {result['available_capacity_dose2']}\n" \
-                               f"<a href='https://www.google.com/maps/search/?api=1&query={result['lat']},{result['long']}'>Click to get directions</a> \n" \
-                               f"------------------------\n"
+                    text = f"{number}) <strong>{result['name']}</strong> \nAddress: <strong>{result['address']}</strong>\n" \
+                           f"Block: <strong>{result['block_name']}</strong> | Pin: {result['pincode']}\n" \
+                           f"Open from <strong>{result['from']} to {result['to']}</strong>\n" \
+                           f"Vaccine: <strong>{result['vaccine']}</strong>\n" \
+                           f"\n<strong>Availability</strong>\n" \
+                           f"First Dose: {result['available_capacity_dose1']}\n" \
+                           f"Second Dose: {result['available_capacity_dose2']}\n" \
+                           f"<a href='https://www.google.com/maps/search/?api=1&query={result['lat']},{result['long']}'>Click to get directions</a> \n" \
+                           f"------------------------\n"
+
+                    if len(message + text) < 4096:
+                        message += text
+                    else:
+                        messages.append(message)
+                        message = ''
                     number += 1
-        if message == '':
-            message = None
-        else:
-            message = f'<b>{date}</b>\n \n' + message
-    else:
-        message = 'All servers are busy, please try after some time 🤕'
-    return message
+            if message:
+                messages.append(message)
+
+    return data.status_code, messages
 
 
 # Conversation Start
@@ -153,13 +156,27 @@ def district_result(update: Update, _: CallbackContext) -> int:
     reply_keyboard = [['District', 'Pin'], ['New Date', '/stop']]
     global user_date
     user_date = update.message.text
-    message = get_data(selected_district=user_district[0], date=update.message.text)
-    update.message.reply_text(
-        message if message is not None else 'No slot available in ' + user_district[0][
-            'district_name'] + ' on ' + user_date + '😢',
-        parse_mode=ParseMode.HTML,
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
-    )
+    status, messages = get_data(selected_district=user_district[0], date=update.message.text)
+    if status == 200 and len(messages):
+        for message in messages:
+            update.message.reply_text(
+                f'<b>{user_date}</b>\n\n{message}',
+                parse_mode=ParseMode.HTML,
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+            )
+    elif status != 200:
+        update.message.reply_text(
+            constants.SERVER_ERROR,
+            parse_mode=ParseMode.HTML,
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+        )
+    elif not len(messages):
+        update.message.reply_text(
+            'No slot available in ' + user_district[0][
+                'district_name'] + ' on ' + user_date + '😢',
+            parse_mode=ParseMode.HTML,
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+        )
     update.message.reply_text(
         '/district     /pin     /newdate     /restart',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
@@ -171,12 +188,27 @@ def pin_result(update: Update, _: CallbackContext) -> int:
     reply_keyboard = [['District', 'Pin'], ['New Date', '/stop']]
     global user_date
     user_date = update.message.text
-    message = get_data(date=update.message.text, pin=user_pin)
-    update.message.reply_text(
-        message if message is not None else 'No slot available in ' + user_pin + ' on ' + user_date + '😢',
-        parse_mode=ParseMode.HTML,
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
-    )
+    status, messages = get_data(date=update.message.text, pin=user_pin)
+
+    if status == 200 and len(messages):
+        for message in messages:
+            update.message.reply_text(
+                f'<b>{user_date}</b>\n\n{message}',
+                parse_mode=ParseMode.HTML,
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+            )
+    elif status != 200:
+        update.message.reply_text(
+            constants.SERVER_ERROR,
+            parse_mode=ParseMode.HTML,
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+        )
+    elif not len(messages):
+        update.message.reply_text(
+            'No slot available in ' + user_pin + ' on ' + user_date + '😢',
+            parse_mode=ParseMode.HTML,
+            reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+        )
     update.message.reply_text(
         '/district     /pin     /newdate     /restart',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
