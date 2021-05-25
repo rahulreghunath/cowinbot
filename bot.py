@@ -150,7 +150,7 @@ def district_pin_dialogue(update: Update, _: CallbackContext) -> int:
 
 
 def district_result(update: Update, _: CallbackContext) -> int:
-    reply_keyboard = [['District', 'Pin', 'New Date', '/stop']]
+    reply_keyboard = [['District', 'Pin'], ['New Date', '/stop']]
     global user_date
     user_date = update.message.text
     message = get_data(selected_district=user_district[0], date=update.message.text)
@@ -168,7 +168,7 @@ def district_result(update: Update, _: CallbackContext) -> int:
 
 
 def pin_result(update: Update, _: CallbackContext) -> int:
-    reply_keyboard = [['District', 'Pin', 'New Date', '/stop']]
+    reply_keyboard = [['District', 'Pin'], ['New Date', '/stop']]
     global user_date
     user_date = update.message.text
     message = get_data(date=update.message.text, pin=user_pin)
