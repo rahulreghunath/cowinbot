@@ -1,5 +1,7 @@
+import os
 import logging
 import requests
+from dotenv import load_dotenv
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update, ParseMode
 from telegram.ext import (
     Updater,
@@ -10,39 +12,42 @@ from telegram.ext import (
     CallbackContext, CallbackQueryHandler,
 )
 from districts import districts
-from dotenv import load_dotenv
-import os
+import urls
 
 # Enable logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
+logger = logging.getLogger(__name__)
 
+# Loading env file
 load_dotenv('.env')
 
-logger = logging.getLogger(__name__)
 API_KEY = os.getenv('API_KEY')
 
 GENDER, PHOTO, LOCATION, BIO, SELECT_TYPE, PIN, DISTRICT_RESULT, PIN_RESULT, RESTART, DATE_INPUT, PIN_INPUT = range(11)
-user_district = None
-user_pin = None
-user_date = None
+user_district = []
+user_pin = ''
+user_date = ''
 
 
 def get_data(selected_district=None, date=None, pin=None):
     if selected_district:
-        url = f'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id={selected_district["district_id"]}&date={date}'
+        url = urls.FIND_BY_DIST.format(selected_district["district_id"], date)
     else:
-        url = f'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode={pin}&date={date}'
+        url = urls.FIND_BY_PIN.format(pin, date)
+
     headers = {
         'Accept-Language': 'IN',
         'Accept': 'application/json',
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
     }
-    print(url)
+    # Getting data
     data = requests.get(
         url,
-        headers=headers)
+        headers=headers
+    )
+
     if data.status_code == 200:
         results = data.json()['sessions']
         message = ''
@@ -70,12 +75,13 @@ def get_data(selected_district=None, date=None, pin=None):
     return message
 
 
+# Conversation Start
 def start(update: Update, _: CallbackContext) -> int:
     reply_keyboard = [['District', 'Pin']]
     if os.getenv('API_KEY') == 'production':
         requests.get('https://api.countapi.xyz/hit/namespace/rahulreghunathmannady')
     user = update.message.from_user
-    logger.info("User %s canceled the conversation.", user.first_name)
+    logger.info("User %s Started the conversation.", user.first_name)
     update.message.reply_text(
         'Hi☺️ \nMy name is CowinSlot Bot. Lets find a slot for vaccination.\n'
         'Type /stop anytime to end conversation',
@@ -187,7 +193,7 @@ def main() -> None:
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
-    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    # Add conversation handler
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
