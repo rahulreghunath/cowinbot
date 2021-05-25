@@ -127,19 +127,19 @@ def pin_input(update: Update, _: CallbackContext) -> int:
 
 
 def district_pin_dialogue(update: Update, _: CallbackContext) -> int:
-    if update.message.text.upper() == 'DISTRICT':
+    if update.message.text.upper() in ['DISTRICT', '/DISTRICT']:
         update.message.reply_text(
             'Enter your district',
             reply_markup=ReplyKeyboardRemove(),
         )
         return DATE_INPUT
-    elif update.message.text.upper() == 'PIN':
+    elif update.message.text.upper() in ['PIN', '/PIN']:
         update.message.reply_text(
             'Enter Pin Code',
             reply_markup=ReplyKeyboardRemove(),
         )
         return PIN_INPUT
-    elif update.message.text.upper() == 'NEW DATE':
+    elif update.message.text.upper() in ['NEW DATE', '/PIN']:
         update.message.reply_text(
             'Enter Date (DD/MM/YYYY)',
         )
@@ -160,6 +160,10 @@ def district_result(update: Update, _: CallbackContext) -> int:
         parse_mode=ParseMode.HTML,
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
+    update.message.reply_text(
+        '/district     /pin     /newdate     /restart',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+    )
     return SELECT_TYPE
 
 
@@ -171,6 +175,10 @@ def pin_result(update: Update, _: CallbackContext) -> int:
     update.message.reply_text(
         message if message is not None else 'No slot available in ' + user_pin + ' on ' + user_date + '😢',
         parse_mode=ParseMode.HTML,
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
+    )
+    update.message.reply_text(
+        '/district     /pin     /newdate     /restart',
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
     return SELECT_TYPE
@@ -195,9 +203,12 @@ def main() -> None:
 
     # Add conversation handler
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CommandHandler('start', start), CommandHandler('restart', start)],
         states={
-            SELECT_TYPE: [MessageHandler(Filters.regex('^(District|Pin|New Date)$'), district_pin_dialogue)],
+            SELECT_TYPE: [MessageHandler(
+                Filters.regex('^(District|Pin|New Date|/district|/pin|/newdate)$'),
+                district_pin_dialogue
+            )],
             DATE_INPUT: [MessageHandler(Filters.regex('^[a-zA-Z ]+$'), date_input_dialogue)],
             PIN_INPUT: [MessageHandler(Filters.regex('^[0-9]+$'), pin_input)],
             DISTRICT_RESULT: [MessageHandler(Filters.regex(
