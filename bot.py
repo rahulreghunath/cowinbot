@@ -1,5 +1,6 @@
 import os
 import logging
+from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update, ParseMode
@@ -29,6 +30,14 @@ GENDER, PHOTO, LOCATION, BIO, SELECT_TYPE, PIN, DISTRICT_RESULT, PIN_RESULT, RES
 user_district = []
 user_pin = ''
 user_date = ''
+
+dates = [
+    [datetime.now().strftime('%d/%m/%Y'), (datetime.now() + timedelta(days=1)).strftime('%d/%m/%Y')],
+    [(datetime.now() + timedelta(days=2)).strftime('%d/%m/%Y'),
+     (datetime.now() + timedelta(days=3)).strftime('%d/%m/%Y')],
+    [(datetime.now() + timedelta(days=4)).strftime('%d/%m/%Y'),
+     (datetime.now() + timedelta(days=5)).strftime('%d/%m/%Y')]
+]
 
 
 def get_data(selected_district=None, date=None, pin=None):
@@ -95,6 +104,9 @@ def start(update: Update, _: CallbackContext) -> int:
 
 
 def date_input_dialogue(update: Update, _: CallbackContext) -> int:
+    """
+    Read the district if success ask for date
+    """
     if update.message.text.isnumeric():
         global user_pin
         user_pin = update.message.text
@@ -105,6 +117,7 @@ def date_input_dialogue(update: Update, _: CallbackContext) -> int:
         if len(user_district):
             update.message.reply_text(
                 'Enter Date (DD/MM/YYYY)',
+                reply_markup=ReplyKeyboardMarkup(dates, one_time_keyboard=True),
             )
             return DISTRICT_RESULT
         else:
@@ -115,11 +128,15 @@ def date_input_dialogue(update: Update, _: CallbackContext) -> int:
 
 
 def pin_input(update: Update, _: CallbackContext) -> int:
+    """
+    Read the pin code and if success ask for date
+    """
     global user_pin
     user_pin = update.message.text
     if len(user_pin) == 6:
         update.message.reply_text(
             'Enter Date (DD/MM/YYYY)',
+            reply_markup=ReplyKeyboardMarkup(dates, one_time_keyboard=True),
         )
         return PIN_RESULT
     else:
@@ -130,6 +147,9 @@ def pin_input(update: Update, _: CallbackContext) -> int:
 
 
 def district_pin_dialogue(update: Update, _: CallbackContext) -> int:
+    """
+    Select the input option
+    """
     if update.message.text.upper() in ['DISTRICT', '/DISTRICT']:
         update.message.reply_text(
             'Enter your district',
@@ -153,6 +173,9 @@ def district_pin_dialogue(update: Update, _: CallbackContext) -> int:
 
 
 def district_result(update: Update, _: CallbackContext) -> int:
+    """
+    Send result message from a specific district
+    """
     reply_keyboard = [['District', 'Pin'], ['New Date', '/stop']]
     global user_date
     user_date = update.message.text
@@ -185,6 +208,9 @@ def district_result(update: Update, _: CallbackContext) -> int:
 
 
 def pin_result(update: Update, _: CallbackContext) -> int:
+    """
+    Send result message from a specific pin code
+    """
     reply_keyboard = [['District', 'Pin'], ['New Date', '/stop']]
     global user_date
     user_date = update.message.text
@@ -217,6 +243,9 @@ def pin_result(update: Update, _: CallbackContext) -> int:
 
 
 def cancel(update: Update, _: CallbackContext) -> int:
+    """
+    End the conversation
+    """
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
