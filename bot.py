@@ -31,14 +31,6 @@ user_district = []
 user_pin = ''
 user_date = ''
 
-dates = [
-    [datetime.now().strftime('%d/%m/%Y'), (datetime.now() + timedelta(days=1)).strftime('%d/%m/%Y')],
-    [(datetime.now() + timedelta(days=2)).strftime('%d/%m/%Y'),
-     (datetime.now() + timedelta(days=3)).strftime('%d/%m/%Y')],
-    [(datetime.now() + timedelta(days=4)).strftime('%d/%m/%Y'),
-     (datetime.now() + timedelta(days=5)).strftime('%d/%m/%Y')]
-]
-
 
 def get_data(selected_district=None, date=None, pin=None):
     messages = []
@@ -115,6 +107,13 @@ def date_input_dialogue(update: Update, _: CallbackContext) -> int:
         global user_district
         user_district = list(filter(lambda el: el['district_name'].upper() == update.message.text.upper(), districts))
         if len(user_district):
+            dates = [
+                [datetime.now().strftime('%d/%m/%Y'), (datetime.now() + timedelta(days=1)).strftime('%d/%m/%Y')],
+                [(datetime.now() + timedelta(days=2)).strftime('%d/%m/%Y'),
+                 (datetime.now() + timedelta(days=3)).strftime('%d/%m/%Y')],
+                [(datetime.now() + timedelta(days=4)).strftime('%d/%m/%Y'),
+                 (datetime.now() + timedelta(days=5)).strftime('%d/%m/%Y')]
+            ]
             update.message.reply_text(
                 'Enter Date (DD/MM/YYYY)',
                 reply_markup=ReplyKeyboardMarkup(dates, one_time_keyboard=True),
@@ -134,6 +133,13 @@ def pin_input(update: Update, _: CallbackContext) -> int:
     global user_pin
     user_pin = update.message.text
     if len(user_pin) == 6:
+        dates = [
+            [datetime.now().strftime('%d/%m/%Y'), (datetime.now() + timedelta(days=1)).strftime('%d/%m/%Y')],
+            [(datetime.now() + timedelta(days=2)).strftime('%d/%m/%Y'),
+             (datetime.now() + timedelta(days=3)).strftime('%d/%m/%Y')],
+            [(datetime.now() + timedelta(days=4)).strftime('%d/%m/%Y'),
+             (datetime.now() + timedelta(days=5)).strftime('%d/%m/%Y')]
+        ]
         update.message.reply_text(
             'Enter Date (DD/MM/YYYY)',
             reply_markup=ReplyKeyboardMarkup(dates, one_time_keyboard=True),
@@ -162,9 +168,17 @@ def district_pin_dialogue(update: Update, _: CallbackContext) -> int:
             reply_markup=ReplyKeyboardRemove(),
         )
         return PIN_INPUT
-    elif update.message.text.upper() in ['NEW DATE', '/PIN']:
+    elif update.message.text.upper() in ['NEW DATE', '/NEWDATE']:
+        dates = [
+            [datetime.now().strftime('%d/%m/%Y'), (datetime.now() + timedelta(days=1)).strftime('%d/%m/%Y')],
+            [(datetime.now() + timedelta(days=2)).strftime('%d/%m/%Y'),
+             (datetime.now() + timedelta(days=3)).strftime('%d/%m/%Y')],
+            [(datetime.now() + timedelta(days=4)).strftime('%d/%m/%Y'),
+             (datetime.now() + timedelta(days=5)).strftime('%d/%m/%Y')]
+        ]
         update.message.reply_text(
             'Enter Date (DD/MM/YYYY)',
+            reply_markup=ReplyKeyboardMarkup(dates, one_time_keyboard=True),
         )
         if bool(user_district):
             return DISTRICT_RESULT
