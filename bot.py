@@ -61,8 +61,7 @@ def get_data(selected_district=None, date=None, pin=None):
                            f"Block: <strong>{result['block_name']}</strong> | Pin: {result['pincode']}\n" \
                            f"Open from <strong>{result['from']} to {result['to']}</strong>\n" \
                            f"Vaccine: <strong>{result['vaccine']}</strong>\n" \
-                           f"Min Age Limit: <strong>{result['min_age_limit']}</strong>" \
-                           f"\n<strong>Availability</strong>\n" \
+                           f"Min Age Limit: <strong>{result['min_age_limit']}</strong>\n" \
                            f"First Dose: {result['available_capacity_dose1']}\n" \
                            f"Second Dose: {result['available_capacity_dose2']}\n" \
                            f"<a href='https://www.google.com/maps/search/?api=1&query={result['lat']},{result['long']}'>Click to get directions</a> \n" \
